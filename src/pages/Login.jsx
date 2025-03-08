@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios"; // Import Axios
-import logo from "../assets/logo.png";
+import logo from "../assets/logo1.png";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -41,7 +41,7 @@ const Login = () => {
 
   return (
     <motion.div
-      className="flex h-screen w-screen bg-[#fffdf5]"
+      className="flex h-screen w-screen bg-[#f7f4f3]"
       initial={{ x: "-100vw", opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100vw", opacity: 0 }}
@@ -49,7 +49,7 @@ const Login = () => {
     >
       {/* Blue Section (Sliding in from Left) */}
       <motion.div
-        className="w-1/2 h-full bg-[#5271ff] flex flex-col justify-center items-center text-white p-10 relative rounded-r-[150px]"
+        className="w-1/2 h-full bg-[#5b2333] flex flex-col justify-center items-center text-white p-10 relative rounded-r-[150px]"
         initial={{ x: -200, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 1, ease: "easeOut" }}
@@ -58,7 +58,7 @@ const Login = () => {
         <h2 className="text-3xl font-bold">Welcome to Swiftora</h2>
         <p className="text-lg mt-2">Don't have an account?</p>
         <button
-          className="mt-4 bg-white text-[#5271ff] px-6 py-3 rounded-lg font-medium"
+          className="mt-4 bg-white text-[#87475a] px-6 py-3 rounded-lg font-medium"
           onClick={() => navigate("/register")}
         >
           Register
@@ -99,7 +99,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-[#5271ff] text-white py-3 rounded-lg hover:bg-[#004aad]"
+              className="w-full bg-[#5b2333] text-white py-3 rounded-lg hover:bg-[#87475a]"
             >
               Login
             </button>

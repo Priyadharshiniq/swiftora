@@ -3,7 +3,7 @@ import axios from "axios";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo1.png";
 
 const Registration = () => {
   const [formData, setFormData] = useState({
@@ -39,7 +39,7 @@ const Registration = () => {
 
   return (
     <motion.div
-      className="flex h-screen w-screen bg-[#fffdf5]"
+      className="flex h-screen w-screen bg-[#f7f4f3]"
       initial={{ x: "100vw", opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "-100vw", opacity: 0 }}
@@ -49,7 +49,7 @@ const Registration = () => {
       <div className="w-1/2 h-full flex flex-col justify-center items-center">
         <div className="w-full max-w-md p-8">
           <h2 className="text-3xl font-semibold text-gray-800 text-center mb-6">
-            Register as <span className="text-[#004aad]">{formData.role}</span>
+            Register as <span className="text-[#87475a]">{formData.role}</span>
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,7 +106,7 @@ const Registration = () => {
               </select>
             </div>
 
-            <button type="submit" className="w-full bg-[#5271ff] text-white py-3 rounded-lg hover:bg-[#004aad]">
+            <button type="submit" className="w-full bg-[#5b2333] text-white py-3 rounded-lg hover:bg-[#87475a]">
               Register
             </button>
           </form>
@@ -115,7 +115,7 @@ const Registration = () => {
 
       {/* Blue Section (Sliding in from Right) */}
       <motion.div
-        className="w-1/2 h-full bg-[#5271ff] flex flex-col justify-center items-center text-white p-10 relative rounded-l-[150px]"
+        className="w-1/2 h-full bg-[#5b2333] flex flex-col justify-center items-center text-white p-10 relative rounded-l-[150px]"
         initial={{ x: 200, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 1, ease: "easeOut" }}
@@ -124,7 +124,7 @@ const Registration = () => {
         <h2 className="text-3xl font-bold">Welcome to Swiftora</h2>
         <p className="text-lg mt-2">Already have an account?</p>
         <button
-          className="mt-4 bg-white text-[#5271ff] px-6 py-3 rounded-lg font-medium"
+          className="mt-4 bg-white text-[#87475a] px-6 py-3 rounded-lg font-medium"
           onClick={() => navigate("/")}
         >
           Login
