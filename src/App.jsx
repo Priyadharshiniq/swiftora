@@ -1,6 +1,10 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Registration from "./pages/Registration";
+import CurrentInventory from "./components/CurrentInventory";
+import SupermarketsSupplied from "./components/SupermarketsSupplied";
+import MyOrders from "./components/MyOrders";
+import InventoryList from "./components/InventoryList";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import SupermarketDashboard from "./pages/SupermarketDashboard";
 import Login from "./pages/Login";

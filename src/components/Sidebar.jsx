@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaStore, FaWarehouse, FaClipboardList, FaBox, FaBell, FaUser, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
+import { 
+  FaHome, FaStore, FaWarehouse, FaClipboardList, 
+  FaBox, FaBell, FaUser, FaSignOutAlt, FaBars, FaTimes 
+} from "react-icons/fa";
 import logo from "../assets/logo1.png"; // Ensure the correct path
 
 const Sidebar = () => {
@@ -43,7 +46,7 @@ const Sidebar = () => {
             <FaUser className="text-xl" /> Profile
           </NavLink>
           <NavLink
-            to="/supplier-supermarkets"
+            to="/supplier-supermarkets-supplied"
             className="flex items-center gap-3 px-6 py-3 text-lg transition-all duration-300 hover:bg-[#87475a]"
           >
             <FaStore className="text-xl" /> My Supermarkets
@@ -55,16 +58,16 @@ const Sidebar = () => {
             <FaWarehouse className="text-xl" /> My Warehouses
           </NavLink>
           <NavLink
-            to="/supplier-orders"
+            to="/supplier-my-orders"
             className="flex items-center gap-3 px-6 py-3 text-lg transition-all duration-300 hover:bg-[#87475a]"
           >
-            <FaClipboardList className="text-xl" /> Orders
+            <FaClipboardList className="text-xl" /> My Orders
           </NavLink>
           <NavLink
-            to="/supplier-inventory"
+            to="/supplier-current-inventory"
             className="flex items-center gap-3 px-6 py-3 text-lg transition-all duration-300 hover:bg-[#87475a]"
           >
-            <FaBox className="text-xl" /> Manage Inventory
+            <FaBox className="text-xl" /> Current Inventory
           </NavLink>
           <NavLink
             to="/supplier-notifications"

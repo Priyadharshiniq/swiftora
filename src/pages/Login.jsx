@@ -2,12 +2,13 @@ import { useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import axios from "axios"; // Import Axios
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import logo from "../assets/logo1.png";
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState(""); // State for error message
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -18,26 +19,27 @@ const Login = () => {
     e.preventDefault();
   
     try {
-      const response = await axios.post("https://swiftora-backend.vercel.app/api/users/login", formData);
-      const { token, role } = response.data;
+      const response = await axios.post("https://swiftora.vercel.app/api/users/login", {
+        username: formData.username,
+        password: formData.password,
+      });
   
-      // Store token in local storage
+      const { token, user, supplierDetails } = response.data;
+  
+      // Store data in localStorage
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
   
-      // Convert role to lowercase to avoid case mismatches
-      const userRole = role.toLowerCase();
-  
-      // Navigate based on role
-      if (userRole === "supplier") {
-        navigate("/supplier-dashboard");
-      } else {
-        navigate("/supermarket-dashboard");
+      if (user.role === "supplier" && supplierDetails) {
+        localStorage.setItem("supplierDetails", JSON.stringify(supplierDetails));
       }
+  
+      // Redirect based on role
+      navigate(user.role === "supplier" ? "/supplier-dashboard" : "/supermarket-dashboard");
     } catch (error) {
-      setError(error.response?.data?.message || "Invalid credentials");
+      setError(error.response?.data?.message || "Login failed. Please try again.");
     }
   };
-  
 
   return (
     <motion.div
@@ -72,12 +74,12 @@ const Login = () => {
           {error && <p className="text-red-600 text-center">{error}</p>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700">Email</label>
+              <label className="block text-gray-700">Username</label>
               <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 required
