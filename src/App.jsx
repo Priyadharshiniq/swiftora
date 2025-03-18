@@ -1,10 +1,9 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Registration from "./pages/Registration";
-import CurrentInventory from "./components/CurrentInventory";
-import SupermarketsSupplied from "./components/SupermarketsSupplied";
-import MyOrders from "./components/MyOrders";
-import InventoryList from "./components/InventoryList";
+import CurrentInventoryPage from "./pages/CurrentInventoryPage";
+import MySupermarkets from "./pages/MySupermarkets";
+import Orders from "./pages/Orders";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import SupermarketDashboard from "./pages/SupermarketDashboard";
 import Login from "./pages/Login";
@@ -16,6 +15,9 @@ function App() {
       <Route path="/register" element={<Registration />} />
       <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
       <Route path="/supermarket-dashboard" element={<SupermarketDashboard />} />
+      <Route path="/my-supermarkets" element={<MySupermarkets />} />
+      <Route path="/inventory" element={<CurrentInventoryPage />} />
+      <Route path="/my-orders" element={<Orders />} />
     </Routes>
   );
 }
