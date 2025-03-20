@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
 import debounce from "lodash.debounce";
 
-// Store API Key & Libraries outside component to prevent unnecessary reloads
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY; // Replace with actual API Key
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const MAP_LIBRARIES = ["places"];
 
 const SupplierProfile = () => {
@@ -22,14 +21,18 @@ const SupplierProfile = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Fetch user data with authentication
+  // Load Google Maps API once
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: API_KEY,
+    libraries: MAP_LIBRARIES,
+  });
+
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No authentication token found.");
-        }
+        if (!token) throw new Error("No authentication token found.");
 
         const response = await axios.get("https://swiftora.vercel.app/api/users/profile", {
           headers: { Authorization: `Bearer ${token}` },
@@ -57,7 +60,7 @@ const SupplierProfile = () => {
     fetchUserData();
   }, []);
 
-  // Get Accurate Current Location Once
+  // Get User's Current Location on First Load
   useEffect(() => {
     if (!userData.location.lat && !userData.location.lng) {
       navigator.geolocation.getCurrentPosition(
@@ -66,13 +69,13 @@ const SupplierProfile = () => {
           const lng = position.coords.longitude;
 
           try {
-            // Fetch more accurate location using Google Geolocation API
+            // Fetch accurate location using Google Geolocation API
             const geoResponse = await axios.post(
               `https://www.googleapis.com/geolocation/v1/geolocate?key=${API_KEY}`
             );
             const { lat: accurateLat, lng: accurateLng } = geoResponse.data.location;
 
-            // Reverse geocode to get address
+            // Reverse geocode to get the address
             const addressResponse = await axios.get(
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${accurateLat},${accurateLng}&key=${API_KEY}`
             );
@@ -100,12 +103,12 @@ const SupplierProfile = () => {
     }
   }, []);
 
-  // Handle Input Changes (Including Address)
+  // Handle Input Changes
   const handleChange = (e) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
-  // Handle Map Clicks to Update Address & Location
+  // Handle Map Click to Update Address & Location
   const handleMapClick = async (event) => {
     const lat = event.latLng.lat();
     const lng = event.latLng.lng();
@@ -209,7 +212,7 @@ const SupplierProfile = () => {
             </div>
           ))}
 
-          {/* Location Field (Address Input) */}
+          {/* Address Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Location</label>
             <input
@@ -217,25 +220,24 @@ const SupplierProfile = () => {
               name="address"
               value={userData.address}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md focus:ring-[#5b2333] focus:border-[#5b2333]"
+              className="w-full p-2 border rounded-md"
               placeholder="Enter your location"
             />
           </div>
 
-          {/* Google Maps Location Picker */}
-          <LoadScript googleMapsApiKey={API_KEY} libraries={MAP_LIBRARIES}>
+          {/* Google Maps Component */}
+          {isLoaded && (
             <GoogleMap
               mapContainerStyle={{ width: "100%", height: "300px" }}
               center={userData.location}
               zoom={12}
               onClick={handleMapClick}
             >
-              <Marker position={userData.location} />
+              <MarkerF position={userData.location} />
             </GoogleMap>
-          </LoadScript>
+          )}
 
-          {/* Submit Button */}
-          <button type="submit" className="w-full p-2 bg-[#5b2333] text-white rounded-md hover:bg-[#87475a]">
+          <button type="submit" className="w-full p-2 bg-[#5b2333] text-white rounded-md">
             Save Profile
           </button>
         </form>

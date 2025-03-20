@@ -1,6 +1,10 @@
 import React from 'react'
 import Sidebar from "../components/Sidebar";
+import { LoadScript } from "@react-google-maps/api";
 import SupplierProfile from '../components/SupplierProfile'
+
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const MAP_LIBRARIES = ["places"];
 const SupplierProfilePage = () => {
   return (
     <div className="flex min-h-screen bg-[#f7f4f3]">
@@ -12,7 +16,9 @@ const SupplierProfilePage = () => {
         <h1 className="text-2xl md:text-3xl mb-4 font-semibold text-[#5b2333]">Supplier Profile</h1>
         {/* Dashboard Sections */}
         <div className="space-y-6 md:space-y-8">
-          <SupplierProfile />
+            <LoadScript googleMapsApiKey={API_KEY} libraries={MAP_LIBRARIES}>
+                <SupplierProfile />
+            </LoadScript>
         </div>
       </div>
     </div>
