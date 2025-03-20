@@ -4,6 +4,7 @@ import Registration from "./pages/Registration";
 import CurrentInventoryPage from "./pages/CurrentInventoryPage";
 import MySupermarkets from "./pages/MySupermarkets";
 import Orders from "./pages/Orders";
+import SupplierProfilePage from "./pages/SupplierProfilePage";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import SupermarketDashboard from "./pages/SupermarketDashboard";
 import Login from "./pages/Login";
@@ -18,6 +19,7 @@ function App() {
       <Route path="/my-supermarkets" element={<MySupermarkets />} />
       <Route path="/inventory" element={<CurrentInventoryPage />} />
       <Route path="/my-orders" element={<Orders />} />
+      <Route path="/supplier-profile" element={<SupplierProfilePage />} />
     </Routes>
   );
 }
