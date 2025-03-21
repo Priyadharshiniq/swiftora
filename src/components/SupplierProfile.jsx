@@ -8,6 +8,8 @@ const MAP_LIBRARIES = ["places"];
 
 const SupplierProfile = () => {
   const [userData, setUserData] = useState({
+    userId: "",
+    supplierId: "",
     username: "",
     email: "",
     role: "",
@@ -21,63 +23,95 @@ const SupplierProfile = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Load Google Maps API once
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: API_KEY,
     libraries: MAP_LIBRARIES,
   });
 
-  // Fetch user data
-  useEffect(() => {
-    const fetchUserData = async () => {
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found.");
+
+      // Step 1: Fetch basic user profile (userId, username, email, role)
+      const userProfileResponse = await axios.get(
+        "https://swiftora.vercel.app/api/users/profile",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const user = userProfileResponse.data;
+      
+      // Initialize userData with user profile data
+      let profileData = {
+        userId: user.userId,
+        username: user.username || "",
+        email: user.email || "",
+        role: user.role || "",
+        supplierId: "",
+        name: "",
+        contact: "",
+        location: { lat: 0, lng: 0 },
+        address: "",
+      };
+
+      // Step 2: Fetch supplier profile (supplierId, name, contact)
       try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No authentication token found.");
-
-        const response = await axios.get("https://swiftora.vercel.app/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const user = response.data;
-        setUserData({
-          username: user.username || "",
-          email: user.email || "",
-          role: user.role || "",
-          name: user.name || "",
-          contact: user.contact || "",
-          location: user.location || { lat: 0, lng: 0 },
-          address: user.address || "",
-        });
-
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch user data.");
-        console.error("Error fetching user data:", err);
-        setLoading(false);
+        const supplierProfileResponse = await axios.get(
+          "https://swiftora.vercel.app/api/suppliers/profile",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        const supplier = supplierProfileResponse.data;
+        
+        // Update profile data with supplier information
+        profileData.supplierId = supplier.supplierId;
+        profileData.name = supplier.name || "";
+        profileData.contact = supplier.contact || "";
+      } catch (supplierError) {
+        console.error("Error fetching supplier profile:", supplierError);
       }
-    };
 
-    fetchUserData();
+      // Step 3: Fetch location data using userId
+      try {
+        const locationResponse = await axios.get(
+          `https://swiftora.vercel.app/api/users/location/${user.userId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (locationResponse.data.success && locationResponse.data.location) {
+          profileData.location = locationResponse.data.location;
+          profileData.address = locationResponse.data.location.address || "";
+        }
+      } catch (locationError) {
+        console.warn("⚠ No stored location found, defaulting to current location.");
+        // Will fetch current location in useEffect
+      }
+
+      setUserData(profileData);
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to fetch user data. Please try again later.");
+      console.error("Error fetching user data:", err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
   }, []);
 
-  // Get User's Current Location on First Load
+  // Fetch current location if no location is set
   useEffect(() => {
-    if (!userData.location.lat && !userData.location.lng) {
+    if ((!userData.location.lat && !userData.location.lng) || 
+        (userData.location.lat === 0 && userData.location.lng === 0)) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
 
           try {
-            // Fetch accurate location using Google Geolocation API
-            const geoResponse = await axios.post(
-              `https://www.googleapis.com/geolocation/v1/geolocate?key=${API_KEY}`
-            );
-            const { lat: accurateLat, lng: accurateLng } = geoResponse.data.location;
-
-            // Reverse geocode to get the address
             const addressResponse = await axios.get(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${accurateLat},${accurateLng}&key=${API_KEY}`
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`
             );
 
             const formattedAddress =
@@ -85,15 +119,14 @@ const SupplierProfile = () => {
 
             setUserData((prev) => ({
               ...prev,
-              location: { lat: accurateLat, lng: accurateLng },
+              location: { lat, lng },
               address: formattedAddress,
             }));
           } catch (error) {
             console.error("Error fetching accurate location:", error);
             setUserData((prev) => ({
               ...prev,
-              location: { lat, lng }, // Fallback to browser location
-              address: "Location could not be determined",
+              location: { lat, lng },
             }));
           }
         },
@@ -101,20 +134,17 @@ const SupplierProfile = () => {
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
-  }, []);
+  }, [userData.location]);
 
-  // Handle Input Changes
   const handleChange = (e) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
-  // Handle Map Click to Update Address & Location
   const handleMapClick = async (event) => {
     const lat = event.latLng.lat();
     const lng = event.latLng.lng();
     setUserData((prev) => ({ ...prev, location: { lat, lng } }));
 
-    // Reverse Geocode Only When Necessary
     try {
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`
@@ -128,7 +158,6 @@ const SupplierProfile = () => {
     }
   };
 
-  // Debounced Function to Update Map from Input
   const handleAddressChange = useCallback(
     debounce(async (address) => {
       if (!address) return;
@@ -147,12 +176,10 @@ const SupplierProfile = () => {
     []
   );
 
-  // Update Location When Address Changes
   useEffect(() => {
     handleAddressChange(userData.address);
   }, [userData.address, handleAddressChange]);
 
-  // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -160,18 +187,38 @@ const SupplierProfile = () => {
 
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found.");
+      if (!token) throw new Error("No authentication token found.");
+
+      // Only update supplier info if supplierId exists
+      if (userData.supplierId) {
+        // Update supplier name and contact
+        await axios.put(
+          `https://swiftora.vercel.app/api/suppliers/${userData.supplierId}`,
+          { name: userData.name, contact: userData.contact },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        throw new Error("Supplier ID not found. Cannot update supplier information.");
       }
 
-      await axios.put("https://swiftora.vercel.app/api/users/update", userData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Update user location
+      await axios.put(
+        "https://swiftora.vercel.app/api/users/update-location",
+        { 
+          userId: userData.userId, 
+          location: userData.location, 
+          address: userData.address 
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      // After successful update, refresh the data to show updated values
+      fetchUserProfile();
+      
       setMessage("Profile updated successfully!");
     } catch (err) {
       console.error("Error updating profile:", err);
-      setError("Failed to update profile.");
+      setError("Failed to update profile. " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -181,9 +228,13 @@ const SupplierProfile = () => {
 
       {loading ? (
         <p className="text-gray-600">Loading profile...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
       ) : (
         <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
-          {/* Read-Only Fields */}
+          {message && <div className="p-2 bg-green-100 text-green-700 rounded">{message}</div>}
+          
+          {/* Read-only fields from user table */}
           {["username", "email", "role"].map((field) => (
             <div key={field}>
               <label className="block text-sm font-medium text-gray-700 capitalize">{field}</label>
@@ -197,7 +248,7 @@ const SupplierProfile = () => {
             </div>
           ))}
 
-          {/* Editable Fields */}
+          {/* Editable fields from supplier table */}
           {["name", "contact"].map((field) => (
             <div key={field}>
               <label className="block text-sm font-medium text-gray-700 capitalize">{field}</label>
@@ -212,7 +263,7 @@ const SupplierProfile = () => {
             </div>
           ))}
 
-          {/* Address Input */}
+          {/* Location field */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Location</label>
             <input
@@ -225,21 +276,32 @@ const SupplierProfile = () => {
             />
           </div>
 
-          {/* Google Maps Component */}
+          {/* Google Map */}
           {isLoaded && (
-            <GoogleMap
-              mapContainerStyle={{ width: "100%", height: "300px" }}
-              center={userData.location}
-              zoom={12}
+            <GoogleMap 
+              mapContainerStyle={{ width: "100%", height: "300px" }} 
+              center={userData.location.lat ? userData.location : { lat: 28.6139, lng: 77.2090 }} 
+              zoom={12} 
               onClick={handleMapClick}
             >
               <MarkerF position={userData.location} />
             </GoogleMap>
           )}
 
-          <button type="submit" className="w-full p-2 bg-[#5b2333] text-white rounded-md">
+          {/* Form submission button */}
+          <button 
+            type="submit" 
+            className="w-full p-2 bg-[#5b2333] text-white rounded-md hover:bg-[#4a1c29]"
+            disabled={!userData.supplierId}
+          >
             Save Profile
           </button>
+          
+          {!userData.supplierId && (
+            <p className="text-yellow-600 text-sm">
+              Supplier profile not found. Please contact support.
+            </p>
+          )}
         </form>
       )}
     </div>
